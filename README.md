@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Para & Biconomy Example Project
+
+This project demonstrates how to integrate **Para** for seamless user authentication using social accounts or wallets and **Biconomy** to enable gasless transactions. Users can log in via Para and send transactions without needing to pay for gas fees directly.
+
+## Features
+
+- **Login with Social Accounts or Wallets**: Users can sign in using Google, Twitter, or an Ethereum wallet.
+- **Gasless Transactions**: Transactions are processed through Biconomy's paymaster service, allowing users to interact with the blockchain without holding native tokens for gas fees.
+- **Smart Account Abstraction**: The project utilizes smart contract wallets through Para, simplifying the Web3 experience for users.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+Ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/)
+- [npm](https://www.npmjs.com/)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/fraolb/para-biconomy
+   ```
+2. Navigate to the project folder:
+   ```bash
+   cd para-biconomy
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Environment Variables
+
+Create a `.env` file in the root directory and add the necessary environment variables:
+
+> **Disclaimer:** The URLs and other sensitive links included in this repository are for **testing purposes only**. Do not use them in a production environment without proper security measures.
+
+### Running the Project
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Open the application in your browser.
+2. Click **Login with Para** to authenticate using a social account or wallet.
+3. Enter the recipient's address and amount to send.
+4. Click **Send Transaction** to initiate a gasless transaction.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
 
-## Learn More
+- **Next.js** - Frontend framework
+- **Para** - Authentication & Smart Wallet Management
+- **Biconomy** - Gasless transaction infrastructure
+- **Ethers.js** - Blockchain interactions
 
-To learn more about Next.js, take a look at the following resources:
+## Disclaimer
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is an **example implementation** and should not be used in production without proper security measures. The included URLs, API keys, and other sensitive links are provided **for test purposes only**. Always replace them with your own credentials when deploying.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
+This project is licensed under the MIT License.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Contributions & Feedback
+
+Feel free to contribute or provide feedback! Open an issue or submit a pull request if you find a bug or have improvements.
