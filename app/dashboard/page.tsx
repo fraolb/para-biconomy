@@ -50,13 +50,12 @@ const SignWithBiconomy: React.FC = () => {
   const [smartAddress, setSmartAddress] = useState<`0x${string}` | null>();
 
   const provider = new ethers.JsonRpcProvider(
-    "https://base-sepolia.infura.io/v3/1936342871af407688f7f4381bd50ceb"
+    `${process.env.NEXT_PUBLIC_RPC_UR}`
   );
 
   const bundlerUrl =
     "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44";
-  const paymasterUrl =
-    "https://paymaster.biconomy.io/api/v2/84532/F7wyL1clz.75a64804-3e97-41fa-ba1e-33e98c2cc703";
+  const paymasterUrl = process.env.NEXT_PUBLIC_PAYMASTER_URL;
 
   const createSmartAccount = async () => {
     if (!para.getUserId()) {
@@ -99,61 +98,16 @@ const SignWithBiconomy: React.FC = () => {
       alert("Please connect your Para account.");
       return;
     }
+    if (!paymasterUrl) {
+      alert("Please add paymaster biconomy.");
+      return;
+    }
 
     console.log("The para user ID is ", para.getUserId());
 
     setLoading(true);
     try {
-      const userId = await para.getUserId();
-      if (!userId) {
-        alert("User is not logged in. Please log in first.");
-        return;
-      }
-
-      console.log("User ID:", userId);
-
-      let evmWallets = await para.getWalletsByType(WalletType.EVM);
-      console.log("EVM Wallets:", evmWallets);
-
-      let walletId;
-
-      if (!evmWallets || evmWallets.length === 0) {
-        console.log("No EVM wallet found. Creating a pregenerated wallet...");
-
-        const pregenWallet = await para.createPregenWallet({
-          type: WalletType.EVM,
-          pregenIdentifier: userId,
-          pregenIdentifierType: "CUSTOM_ID",
-        });
-
-        console.log("New pregenerated wallet created:", pregenWallet.id);
-        evmWallets = await para.getWalletsByType(WalletType.EVM);
-      }
-
-      if (!evmWallets || evmWallets.length === 0) {
-        alert("Failed to create or retrieve a wallet. Please try again.");
-        return;
-      }
-
-      walletId = evmWallets[0].id;
-      console.log("Using Wallet ID:", walletId);
-
-      // Get the signer for this wallet
-
       const ethersSigner = new ParaEthersSigner(para, provider);
-      const address = await ethersSigner.getAddress();
-      console.log(
-        "Signer Address:",
-        ethersSigner,
-        ethersSigner.getAddress(),
-        ethersSigner.getNonce(),
-        "wallet ",
-        para.getWallets()[0],
-
-        address
-      );
-      const wallets = para.getWallets();
-      const firstWallet = Object.values(wallets)[0];
 
       const signer = {
         ...ethersSigner,
@@ -172,11 +126,6 @@ const SignWithBiconomy: React.FC = () => {
 
       const privateKey = generatePrivateKey();
       const account = privateKeyToAccount(`${privateKey}`);
-
-      // Ensure the signer is valid
-      if (!ethersSigner) {
-        throw new Error("Failed to retrieve signer for wallet.");
-      }
 
       // Use the recovered signer from Para, instead of generating a new one
       const nexusClient = createSmartAccountClient({
