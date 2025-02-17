@@ -17,7 +17,6 @@
     "@biconomy/modules": "^3.1.4",
     "@biconomy/paymaster": "^3.1.4",
     "@biconomy/sdk": "^0.0.29",
-    "@getpara/ethers-v5-integration": "^1.1.0",
     "@getpara/ethers-v6-integration": "^1.2.0",
     "@getpara/evm-wallet-connectors": "^1.1.0",
     "@getpara/react-sdk": "^1.1.0",
