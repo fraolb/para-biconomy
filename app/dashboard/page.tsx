@@ -2,30 +2,23 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ParaModal, OAuthMethod, WalletType } from "@getpara/react-sdk";
-import { createNexusClient } from "@biconomy/sdk";
-import {
-  createSmartAccountClient,
-  createBicoPaymasterClient,
-  toNexusAccount,
-} from "@biconomy/abstractjs";
-import { http, parseEther } from "viem";
-import para from "../../para";
-import { privateKeyToAccount, generatePrivateKey } from "viem/accounts";
 
-import { ParaEthersV5Signer } from "@getpara/ethers-v5-integration";
+import para from "../../para";
+import { http, parseEther } from "viem";
 import { ethers } from "ethers";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { sepolia, celo, mainnet, polygon, baseSepolia } from "wagmi/chains";
+
+import { ParaModal } from "@getpara/react-sdk";
 import {
   ParaEvmProvider,
   coinbaseWallet,
   metaMaskWallet,
-  rabbyWallet,
   rainbowWallet,
   zerionWallet,
 } from "@getpara/evm-wallet-connectors";
 import { ParaEthersSigner } from "@getpara/ethers-v6-integration";
+
 import {
   BiconomySmartAccountV2,
   DEFAULT_ENTRYPOINT_ADDRESS,
@@ -40,7 +33,6 @@ const SignWithBiconomy: React.FC = () => {
     ""
   );
   const [isOpen, setIsOpen] = useState(false);
-  const [transactionReceipt, setTransactionReceipt] = useState<any>(null);
   const [amount, setAmount] = useState<string>("0");
   const [recipient, setRecipient] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,11 +44,11 @@ const SignWithBiconomy: React.FC = () => {
   const provider = new ethers.JsonRpcProvider(
     `${process.env.NEXT_PUBLIC_RPC_UR}`
   );
-
   const bundlerUrl =
     "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44";
   const paymasterUrl = process.env.NEXT_PUBLIC_PAYMASTER_URL;
 
+  // This function creates a biconomy smart account using Para Ethers Signer
   const createSmartAccount = async () => {
     if (!para.getUserId()) {
       alert("Please connect your Para account.");
@@ -89,6 +81,7 @@ const SignWithBiconomy: React.FC = () => {
     }
   };
 
+  // This function makes a gasless transaction using Biconomy
   const handleTransaction = async () => {
     if (!recipient) {
       alert("Please add recipient address");
@@ -103,56 +96,31 @@ const SignWithBiconomy: React.FC = () => {
       return;
     }
 
-    console.log("The para user ID is ", para.getUserId());
-
     setLoading(true);
     try {
       const ethersSigner = new ParaEthersSigner(para, provider);
 
-      const signer = {
-        ...ethersSigner,
-        address: (await ethersSigner.getAddress()) as `0x${string}`, // ✅ Add explicit address property
-        getAddress: async () => ethersSigner.getAddress(),
-        signTransaction: async (tx: ethers.TransactionRequest) =>
-          ethersSigner.signTransaction(tx),
-        signMessage: async (message: string | Uint8Array) =>
-          ethersSigner.signMessage(message),
-        signTypedData: async (
-          domain: ethers.TypedDataDomain,
-          types: Record<string, Array<ethers.TypedDataField>>,
-          value: Record<string, any>
-        ) => ethersSigner.signTypedData(domain, types, value),
+      let biconomySmartAccount = await BiconomySmartAccountV2.create({
+        signer: ethersSigner,
+        chainId: baseSepolia.id,
+        bundlerUrl: bundlerUrl,
+        biconomyPaymasterApiKey: paymasterUrl,
+        entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
+      });
+
+      const transaction = {
+        to: recipient as `0x${string}`,
+        value: parseEther(amount),
       };
 
-      const privateKey = generatePrivateKey();
-      const account = privateKeyToAccount(`${privateKey}`);
+      const { waitForTxHash } = await biconomySmartAccount.sendTransaction(
+        transaction
+      );
+      const { transactionHash, userOperationReceipt } = await waitForTxHash();
 
-      // Use the recovered signer from Para, instead of generating a new one
-      const nexusClient = createSmartAccountClient({
-        account: await toNexusAccount({
-          signer: account,
-          chain: baseSepolia,
-          transport: http(),
-        }),
-        transport: http(bundlerUrl),
-        paymaster: createBicoPaymasterClient({ paymasterUrl }),
-      });
+      console.log("Transaction sent:", transactionHash);
+      setTransactionHash(transactionHash);
 
-      const hash = await nexusClient.sendUserOperation({
-        calls: [
-          {
-            to: recipient as `0x${string}`,
-            value: parseEther(amount),
-          },
-        ],
-      });
-
-      console.log("Transaction hash: ", hash);
-      setTransactionHash(hash);
-
-      const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-      console.log("Transaction receipt: ", receipt);
-      setTransactionReceipt(receipt);
       setLoading(false);
     } catch (error) {
       console.error("Error during transaction: ", error);
@@ -193,7 +161,7 @@ const SignWithBiconomy: React.FC = () => {
             zerionWallet,
             coinbaseWallet,
           ],
-          para: para, // Your para client instance
+          para: para,
         }}
       >
         <div className="min-h-screen p-8">
